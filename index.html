@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>企业邮箱扩容计算器 | 可自定义基准日</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(145deg, #eef2f7 0%, #dce5ed 100%);
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+
+        .calculator-card {
+            max-width: 880px;
+            width: 100%;
+            background: rgba(255,255,255,0.98);
+            border-radius: 2rem;
+            box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.2), 0 1px 3px rgba(0,0,0,0.05);
+            overflow: hidden;
+            transition: all 0.2s ease;
+        }
+
+        .card-header {
+            background: #1a2c3e;
+            padding: 1.8rem 2rem;
+            color: white;
+        }
+        .card-header h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .card-header h1:before {
+            content: "📧";
+            font-size: 1.8rem;
+        }
+        .card-header p {
+            margin-top: 0.5rem;
+            opacity: 0.8;
+            font-size: 0.9rem;
+            border-left: 3px solid #4c9aff;
+            padding-left: 0.8rem;
+        }
+        .badge-rule {
+            background: #2a3f52;
+            display: inline-block;
+            border-radius: 40px;
+            padding: 0.2rem 0.8rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin-top: 0.7rem;
+        }
+
+        .form-body {
+            padding: 2rem 2rem 1.5rem 2rem;
+        }
+
+        .input-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin-bottom: 1.8rem;
+        }
+        .input-field {
+            flex: 1 1 220px;
+            min-width: 170px;
+        }
+        .input-field label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #2c3e4f;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.2px;
+        }
+        .input-field label i {
+            font-style: normal;
+            font-weight: 500;
+            color: #4f7ea0;
+        }
+        .input-field input, .input-field .date-input {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            font-size: 1rem;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 1rem;
+            background: #fefefe;
+            transition: all 0.2s;
+            font-weight: 500;
+            color: #0f172a;
+        }
+        .input-field input:focus {
+            outline: none;
+            border-color: #2c7da0;
+            box-shadow: 0 0 0 3px rgba(44,125,160,0.2);
+        }
+        .input-field input[type="number"] {
+            -moz-appearance: textfield;
+        }
+        .hint-text {
+            font-size: 0.7rem;
+            color: #6c86a3;
+            margin-top: 0.35rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .divider-light {
+            height: 1px;
+            background: #eef2f6;
+            margin: 0.5rem 0 1.5rem 0;
+        }
+
+        .info-panel {
+            background: #f0f6fa;
+            border-radius: 1.5rem;
+            padding: 1.2rem 1.5rem;
+            margin: 0.5rem 0 1.8rem 0;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+        .info-item {
+            flex: 1;
+            text-align: center;
+            background: white;
+            border-radius: 1.2rem;
+            padding: 0.8rem 0.5rem;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        .info-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            font-weight: 600;
+            color: #5b7a9a;
+            letter-spacing: 0.5px;
+        }
+        .info-value {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #1e2f3e;
+            line-height: 1.2;
+            margin-top: 0.2rem;
+            word-break: break-word;
+        }
+        .info-sub {
+            font-size: 0.7rem;
+            color: #5f7d9c;
+        }
+
+        .result-area {
+            background: linear-gradient(135deg, #1f3b4c 0%, #153243 100%);
+            border-radius: 1.5rem;
+            padding: 1.6rem 2rem;
+            margin-top: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            box-shadow: 0 8px 14px rgba(0,0,0,0.1);
+        }
+        .result-text {
+            color: white;
+        }
+        .result-text .result-label {
+            font-size: 0.85rem;
+            font-weight: 500;
+            opacity: 0.8;
+            letter-spacing: 0.3px;
+        }
+        .result-price {
+            font-size: 2.6rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            line-height: 1;
+            margin-top: 0.25rem;
+        }
+        .result-price small {
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+        .btn-reset {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            padding: 0.7rem 1.4rem;
+            border-radius: 3rem;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            backdrop-filter: blur(4px);
+            transition: 0.2s;
+        }
+        .btn-reset:hover {
+            background: rgba(255,255,255,0.35);
+            transform: scale(0.97);
+        }
+        .footer-note {
+            font-size: 0.7rem;
+            text-align: center;
+            color: #7f8c8d;
+            padding: 1rem 1rem 1.5rem;
+            border-top: 1px solid #eef2f8;
+            margin-top: 1rem;
+        }
+        .error-message {
+            color: #e76f51;
+            background: #fff2ef;
+            border-radius: 1rem;
+            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
+            margin-top: 0.8rem;
+            text-align: center;
+        }
+        .base-date-hint {
+            background: #eef4ff;
+            border-radius: 1rem;
+            padding: 0.4rem 1rem;
+            font-size: 0.75rem;
+            color: #1f6392;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        @media (max-width: 640px) {
+            .form-body { padding: 1.5rem; }
+            .info-value { font-size: 1.2rem; }
+            .result-price { font-size: 2rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="calculator-card">
+    <div class="card-header">
+        <h1>邮箱扩容计价器</h1>
+        <p>单价 × 剩余月份 × 扩容人数 = 扩容价格</p>
+        <div class="badge-rule">📅 剩余月份规则：高于15天按一个月计算（自然月精准进位）</div>
+    </div>
+
+    <div class="form-body">
+        <!-- 自定义基准日 + 到期时间 关键区域 -->
+        <div class="input-group">
+            <div class="input-field">
+                <label>📌 计价基准日 (手填)</label>
+                <input type="date" id="baseDate" class="date-input" value="2026-04-09">
+                <div class="hint-text">计算剩余月份的起始日期</div>
+            </div>
+            <div class="input-field">
+                <label>⏰ 服务到期时间</label>
+                <input type="date" id="expiryDate" class="date-input" value="2027-04-09">
+                <div class="hint-text">合同截止日期</div>
+            </div>
+            <div class="input-field">
+                <label>➕ 扩容人数 (个)</label>
+                <input type="number" id="expandUsers" placeholder="新增账号数" step="1" value="10">
+                <div class="hint-text">需要额外增加的用户数</div>
+            </div>
+        </div>
+
+        <!-- 成本参数组 -->
+        <div class="input-group">
+            <div class="input-field">
+                <label>💰 购买总价 (元)</label>
+                <input type="number" id="totalCost" placeholder="例如: 12000" step="any" value="12000">
+                <div class="hint-text">合同总金额</div>
+            </div>
+            <div class="input-field">
+                <label>👥 购买用户数 (个)</label>
+                <input type="number" id="userCount" placeholder="例如: 100" step="1" value="100">
+                <div class="hint-text">授权账号总数</div>
+            </div>
+            <div class="input-field">
+                <label>📆 总年限 (年)</label>
+                <input type="number" id="totalYears" placeholder="例如: 3" step="any" value="3">
+                <div class="hint-text">购买合约总年限</div>
+            </div>
+            <div class="input-field">
+                <label>🏷️ 购买年限 (年)</label>
+                <input type="number" id="purchaseYears" placeholder="参考字段" step="any" value="3">
+                <div class="hint-text">仅记录参考，不计入公式</div>
+            </div>
+        </div>
+
+        <!-- 中间结果展示：单价 + 剩余月份+剩余天数 -->
+        <div class="info-panel">
+            <div class="info-item">
+                <div class="info-label">📌 邮箱单价</div>
+                <div class="info-value" id="unitPriceDisplay">—</div>
+                <div class="info-sub">元/用户/年</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">⏳ 剩余月份</div>
+                <div class="info-value" id="remainingMonthsDisplay">—</div>
+                <div class="info-sub">高于15天 → 进位整月</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">📊 剩余天数</div>
+                <div class="info-value" id="remainingDaysDisplay">—</div>
+                <div class="info-sub">基准日 → 到期日</div>
+            </div>
+        </div>
+
+        <!-- 最终扩容价格 -->
+        <div class="result-area">
+            <div class="result-text">
+                <div class="result-label">扩容总价 (预计)</div>
+                <div class="result-price" id="finalPrice">0.00 <small>元</small></div>
+            </div>
+            <button class="btn-reset" id="resetExampleBtn">↺ 重置示例</button>
+        </div>
+
+        <div id="errorMsg" class="error-message" style="display: none;"></div>
+        <div class="footer-note">
+            * 扩容价格 = 邮箱单价 × 剩余月份 × 扩容人数。<br>
+            * 剩余月份基于【计价基准日】至【服务到期时间】计算：整月数 + (剩余天数＞15天 ? 1月 : 0月)。<br>
+            * 基准日可自由修改，系统以手填日期为准核算剩余月份。
+        </div>
+    </div>
+</div>
+
+<script>
+    (function() {
+        // DOM 元素
+        const totalCostInput = document.getElementById('totalCost');
+        const userCountInput = document.getElementById('userCount');
+        const totalYearsInput = document.getElementById('totalYears');
+        const baseDateInput = document.getElementById('baseDate');
+        const expiryDateInput = document.getElementById('expiryDate');
+        const expandUsersInput = document.getElementById('expandUsers');
+        const purchaseYearsInput = document.getElementById('purchaseYears'); // 仅展示
+
+        // 展示元素
+        const unitPriceSpan = document.getElementById('unitPriceDisplay');
+        const remainingMonthsSpan = document.getElementById('remainingMonthsDisplay');
+        const remainingDaysSpan = document.getElementById('remainingDaysDisplay');
+        const finalPriceSpan = document.getElementById('finalPrice');
+        const errorDiv = document.getElementById('errorMsg');
+
+        const resetBtn = document.getElementById('resetExampleBtn');
+
+        // 辅助：格式化货币
+        function formatCurrency(value) {
+            if (isNaN(value)) return '0.00';
+            return value.toFixed(2);
+        }
+
+        // 计算两个日期之间的天数差（仅正整数天数）
+        function getDaysDifference(startDate, endDate) {
+            if (!startDate || !endDate) return 0;
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            start.setHours(0,0,0,0);
+            end.setHours(0,0,0,0);
+            if (end <= start) return 0;
+            const diffTime = end.getTime() - start.getTime();
+            return Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        }
+
+        // 精确计算剩余月份（基于起始日期startDate，结束日期endDate，规则：剩余天数>15天则加一个月）
+        // 返回整数剩余月份
+        function calculatePreciseRemainingMonths(startDate, endDate) {
+            if (!(startDate instanceof Date) || !(endDate instanceof Date)) return 0;
+            let start = new Date(startDate);
+            let end = new Date(endDate);
+            start.setHours(0,0,0,0);
+            end.setHours(0,0,0,0);
+            if (end <= start) return 0;
+
+            // 1. 计算整月差值 (先按年月差粗略计算)
+            let yearDiff = end.getFullYear() - start.getFullYear();
+            let monthDiff = end.getMonth() - start.getMonth();
+            let totalMonths = yearDiff * 12 + monthDiff;
+            
+            // 构造起始日期加上 totalMonths 个月后的日期
+            let tempDate = new Date(start);
+            tempDate.setMonth(start.getMonth() + totalMonths);
+            
+            // 如果tempDate > end，说明多算了一个月，需要修正
+            if (tempDate > end) {
+                totalMonths--;
+                tempDate = new Date(start);
+                tempDate.setMonth(start.getMonth() + totalMonths);
+            }
+            
+            // 计算剩余天数 (tempDate 到 end 的天数差)
+            const diffTime = end.getTime() - tempDate.getTime();
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            
+            // 最终剩余月份 = 整月数 + (剩余天数 > 15 ? 1 : 0)
+            let finalMonths = totalMonths;
+            if (diffDays > 15) {
+                finalMonths += 1;
+            }
+            return finalMonths >= 0 ? finalMonths : 0;
+        }
+
+        // 主计算与渲染
+        function computeAndRender() {
+            // 隐藏错误信息
+            errorDiv.style.display = 'none';
+            errorDiv.innerText = '';
+
+            // 获取各项数值
+            let totalCost = parseFloat(totalCostInput.value);
+            let userCount = parseInt(userCountInput.value, 10);
+            let totalYears = parseFloat(totalYearsInput.value);
+            let expandUsers = parseInt(expandUsersInput.value, 10);
+            
+            // 获取日期：基准日 和 到期日
+            let baseDateStr = baseDateInput.value;
+            let expiryDateStr = expiryDateInput.value;
+
+            // 校验必填及有效性
+            let hasError = false;
+            if (isNaN(totalCost) || totalCost <= 0) {
+                showError("❌ 购买总价必须为正数");
+                hasError = true;
+            } else if (isNaN(userCount) || userCount <= 0 || !Number.isInteger(userCount)) {
+                showError("❌ 购买用户数必须是正整数");
+                hasError = true;
+            } else if (isNaN(totalYears) || totalYears <= 0) {
+                showError("❌ 总年限必须大于0");
+                hasError = true;
+            } else if (isNaN(expandUsers) || expandUsers <= 0 || !Number.isInteger(expandUsers)) {
+                showError("❌ 扩容人数必须是正整数");
+                hasError = true;
+            } else if (!baseDateStr || baseDateStr.trim() === "") {
+                showError("📅 请填写计价基准日");
+                hasError = true;
+            } else if (!expiryDateStr || expiryDateStr.trim() === "") {
+                showError("📅 请填写服务到期时间");
+                hasError = true;
+            }
+
+            if (hasError) {
+                unitPriceSpan.innerText = '—';
+                remainingMonthsSpan.innerText = '—';
+                remainingDaysSpan.innerText = '—';
+                finalPriceSpan.innerHTML = '0.00 <small>元</small>';
+                return;
+            }
+
+            // 解析日期对象
+            const baseDate = new Date(baseDateStr);
+            const expiryDate = new Date(expiryDateStr);
+            if (isNaN(baseDate.getTime())) {
+                showError("⚠️ 计价基准日格式无效");
+                return;
+            }
+            if (isNaN(expiryDate.getTime())) {
+                showError("⚠️ 到期时间格式无效");
+                return;
+            }
+
+            // 计算邮箱单价: 购买总价 / (购买用户数 * 总年限)
+            const denominator = userCount * totalYears;
+            if (denominator === 0) {
+                showError("⚠️ 用户数与总年限乘积不能为零");
+                return;
+            }
+            const unitPrice = totalCost / denominator;   // 元/用户/年
+
+            // 计算剩余月份和天数（基于手填基准日）
+            let remainingMonths = 0;
+            let remainingDays = 0;
+            const expiryMidnight = new Date(expiryDate);
+            expiryMidnight.setHours(0,0,0,0);
+            const baseMidnight = new Date(baseDate);
+            baseMidnight.setHours(0,0,0,0);
+
+            if (expiryMidnight > baseMidnight) {
+                remainingMonths = calculatePreciseRemainingMonths(baseMidnight, expiryMidnight);
+                remainingDays = getDaysDifference(baseMidnight, expiryMidnight);
+            } else {
+                remainingMonths = 0;
+                remainingDays = 0;
+            }
+
+            // 扩容价格 = 邮箱单价 * 剩余月份 * 扩容人数
+            const expandPrice = unitPrice * remainingMonths * expandUsers;
+
+            // 更新UI
+            unitPriceSpan.innerText = unitPrice.toFixed(2);
+            remainingMonthsSpan.innerText = remainingMonths;
+            remainingDaysSpan.innerText = remainingDays;
+            finalPriceSpan.innerHTML = formatCurrency(expandPrice) + ' <small>元</small>';
+
+            // 附加轻微提醒：如果剩余天数>0且<=15且剩余月份为0，说明不足一月但大于0天，属于不计费区间，不做报错
+            if (remainingDays > 0 && remainingDays <= 15 && remainingMonths === 0 && expiryMidnight > baseMidnight) {
+                // 非错误，仅作为信息提示（静默，不干扰）
+                // 可选加tooltip但不影响计算
+            }
+        }
+
+        function showError(msg) {
+            errorDiv.innerText = msg;
+            errorDiv.style.display = 'block';
+            unitPriceSpan.innerText = '—';
+            remainingMonthsSpan.innerText = '—';
+            remainingDaysSpan.innerText = '—';
+            finalPriceSpan.innerHTML = '0.00 <small>元</small>';
+        }
+
+        // 重置示例：基准日固定为2026-04-09，到期时间设为一年后（2027-04-09），其他参数为演示值
+        function resetToExample() {
+            // 基准日固定为用户指定日期 2026-04-09
+            baseDateInput.value = "2026-04-09";
+            // 到期时间设置为基准日之后一年 (2027-04-09)
+            const baseDate = new Date("2026-04-09");
+            const nextYear = new Date(baseDate);
+            nextYear.setFullYear(baseDate.getFullYear() + 1);
+            const y = nextYear.getFullYear();
+            const m = String(nextYear.getMonth() + 1).padStart(2, '0');
+            const d = String(nextYear.getDate()).padStart(2, '0');
+            expiryDateInput.value = `${y}-${m}-${d}`;
+            
+            // 重置成本相关示例
+            totalCostInput.value = "12000";
+            userCountInput.value = "100";
+            totalYearsInput.value = "3";
+            expandUsersInput.value = "10";
+            // 参考购买年限字段
+            if (purchaseYearsInput) purchaseYearsInput.value = "3";
+            
+            // 触发计算
+            computeAndRender();
+        }
+
+        // 监听所有相关输入事件
+        function bindEvents() {
+            const inputs = [
+                totalCostInput, userCountInput, totalYearsInput,
+                baseDateInput, expiryDateInput, expandUsersInput
+            ];
+            inputs.forEach(input => {
+                input.addEventListener('input', () => computeAndRender());
+                input.addEventListener('change', () => computeAndRender());
+            });
+            // 购买年限仅参考，不参与计算，但保留重置时同步
+            if (purchaseYearsInput) {
+                purchaseYearsInput.addEventListener('input', () => {
+                    // 无计算逻辑，只做视觉同步
+                });
+            }
+            resetBtn.addEventListener('click', resetToExample);
+        }
+
+        // 页面初始校验：若到期时间早于基准日，展示合理剩余月份0；确保初始默认值一致
+        function initDefaultSanity() {
+            // 确保基准日默认值为2026-04-09，如果未设置或为空则设置
+            if (!baseDateInput.value) {
+                baseDateInput.value = "2026-04-09";
+            }
+            // 如果到期时间没有值，设一个默认一年后
+            if (!expiryDateInput.value) {
+                const baseDateVal = baseDateInput.value;
+                const base = new Date(baseDateVal);
+                if (!isNaN(base.getTime())) {
+                    const nextYear = new Date(base);
+                    nextYear.setFullYear(base.getFullYear() + 1);
+                    const y = nextYear.getFullYear();
+                    const m = String(nextYear.getMonth() + 1).padStart(2, '0');
+                    const d = String(nextYear.getDate()).padStart(2, '0');
+                    expiryDateInput.value = `${y}-${m}-${d}`;
+                } else {
+                    expiryDateInput.value = "2027-04-09";
+                }
+            }
+            computeAndRender();
+        }
+
+        bindEvents();
+        initDefaultSanity();
+    })();
+</script>
+</body>
+</html>
